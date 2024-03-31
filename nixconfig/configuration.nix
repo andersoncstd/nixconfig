@@ -42,6 +42,9 @@
     LC_TIME = "pt_BR.UTF-8";
   };
 
+  #nvidia
+  services.xserver.videoDrivers = [ "nvidia" ];
+  
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -53,6 +56,18 @@
   services.xserver = {
     layout = "br";
     xkbVariant = "";
+  };
+
+  #syncthing
+  services = {
+    syncthing = {
+      enable = true;
+      user = "jose";
+      dataDir =
+        "/home/jose/Documentos/Cofres-Obsidian"; # Default folder for new synced folders
+      configDir =
+        "/home/jose/Documentos/.config/syncthing"; # Folder for Syncthing's settings and keys
+    };
   };
 
   # Configure console keymap
@@ -132,6 +147,13 @@
     nmap
     appimage-run
     nixfmt
+    direnv
+    syncthing
+    ffmpeg
+    zip
+    rar
+    unrar
+
 
   ];
 

@@ -8,23 +8,32 @@
 
   home.packages = with pkgs; [
 
+    #browser
     google-chrome
+    #dev
     vscode
     dconf
-    qbittorrent
-    obsidian
-    anki-bin
-    megasync
-    rnote
-    uget
-    telegram-desktop
+    #media
+    vlc
     mpv
     stremio
-    discord
+    qbittorrent
+    #studies
     foliate
     cozy
+    obsidian
+    anki-bin
+    rnote
+    #tools
+    megasync
+    uget
+    #communication
+    telegram-desktop    
+    discord
+    #office
     freeoffice
-
+    evince
+    pdfarranger
     #gnome
     gnome.gnome-terminal
     gnome.dconf-editor
