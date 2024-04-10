@@ -44,7 +44,7 @@
 
   #nvidia
   services.xserver.videoDrivers = [ "nvidia" ];
-  
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -57,19 +57,7 @@
     layout = "br";
     xkbVariant = "";
   };
-
-  #syncthing
-  services = {
-    syncthing = {
-      enable = true;
-      user = "jose";
-      dataDir =
-        "/home/jose/Documentos/Cofres-Obsidian"; # Default folder for new synced folders
-      configDir =
-        "/home/jose/Documentos/.config/syncthing"; # Folder for Syncthing's settings and keys
-    };
-  };
-
+  
   # Configure console keymap
   console.keyMap = "br-abnt2";
 
@@ -93,6 +81,24 @@
     #media-session.enable = true;
   };
 
+  # hardware aceleration support
+  nixpkgs.config.packageOverrides = pkgs: {
+    intel-vaapi-driver =
+      pkgs.intel-vaapi-driver.override { enableHybridCodec = true; };
+  };
+  hardware.opengl = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver # LIBVA_DRIVER_NAME=iHD
+      intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
+      vaapiVdpau
+      libvdpau-va-gl
+    ];
+  };
+  environment.sessionVariables = {
+    LIBVA_DRIVER_NAME = "iHD";
+  }; # Force intel-media-driver
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -105,11 +111,7 @@
     description = "jose";
     shell = pkgs.fish;
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs;
-      [
-        firefox
-
-      ];
+    #packages = with pkgs; [  ];
   };
 
   # Habilitando o fish
@@ -132,29 +134,13 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
     neovim
-    nodejs
-    cargo
-    ripgrep
-    rustc
-    fish
-    git
-    bat
-    eza
-    btop
-    procs
     nmap
-    appimage-run
-    nixfmt
-    direnv
-    syncthing
-    ffmpeg
     zip
     rar
     unrar
-
-
+    fish
+    git
   ];
 
   programs.neovim = {
@@ -171,7 +157,18 @@
   # };
 
   # List services that you want to enable:
-  #  services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
+  services = {
+    udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
+    # syncthing
+    syncthing = {
+      enable = true;
+      user = "jose";
+      dataDir =
+        "/home/jose/Documentos/Cofres-Obsidian"; # Default folder for new synced folders
+      configDir =
+        "/home/jose/Documentos/.config/syncthing"; # Folder for Syncthing's settings and keys
+    };
+  };
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
@@ -180,7 +177,7 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  networking.firewall.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
