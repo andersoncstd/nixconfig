@@ -76,6 +76,7 @@ in {
     gnomeExtensions.caffeine
     gnomeExtensions.blur-my-shell
     gnomeExtensions.gpu-profile-selector
+    gnomeExtensions.containers
     adw-gtk3
 
     # of course you have to install this
