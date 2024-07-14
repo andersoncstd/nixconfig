@@ -7,6 +7,8 @@
 {
   imports = [ # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./lamp/server.nix # Staff relataded to LAMP stack (Apache, MySQL, PHP)
+    #./game.nix
   ];
 
   # Bootloader.
@@ -20,15 +22,44 @@
   boot.loader.grub.efiSupport = true;
   boot.loader.grub.useOSProber = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = true;
+  networking = {
+    networkmanager.enable = true;
+    hostName = "nixos"; # Define your hostname.
+    # wireless.enable = true; # Enables wireless support via wpa_supplicant.
+
+    # Open ports in the firewall.
+    # networking.firewall.allowedTCPPorts = [ ... ];
+    # networking.firewall.allowedUDPPorts = [ ... ];
+    # Or disable the firewall altogether.
+    firewall = {
+      enable = true;
+      allowedTCPPortRanges = [
+        # KDE Connect
+        {
+          from = 1714;
+          to = 1764;
+        }
+      ];
+      allowedUDPPortRanges = [
+        # KDE Connect
+        {
+          from = 1714;
+          to = 1764;
+        }
+      ];
+      # Syncthing ports: 
+      # 8384 for remote access to GUI
+      # 22000 TCP and/or UDP for sync traffic
+      # 21027/UDP for discovery
+      allowedTCPPorts = [ 8384 22000 21027 ];
+      allowedUDPPorts = [ 22000 21027 ];
+    };
+  };
 
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
@@ -50,7 +81,39 @@
 
   # Driver de Vídeo
   nixpkgs.config.nvidia.acceptLicense = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
+
+  #Services
+  services = {
+    xserver = {
+      videoDrivers = [ "nvidia" ];
+      # Enable the X11 windowing system.
+      enable = true;
+
+      # Enable the GNOME Desktop Environment.
+      displayManager.gdm.enable = true;
+      desktopManager.gnome.enable = true;
+
+      # Configure keymap in X11
+      xkb.layout = "br";
+    };
+    # Flatpak support
+    flatpak.enable = true;
+    # Enable the OpenSSH daemon.
+    openssh.enable = true;
+
+    udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
+    # syncthing
+    syncthing = {
+      enable = true;
+      user = "jose";
+      dataDir =
+        "/home/jose/Documentos/MEGA-BKP"; # Default folder for new synced folders
+      configDir =
+        "/home/jose/Documentos/.config/syncthing"; # Folder for Syncthing's settings and keys
+    };
+
+  };
+
   hardware.nvidia = {
     # Modesetting is required.
     modesetting.enable = true;
@@ -75,7 +138,6 @@
     open = false;
 
     # Enable the Nvidia settings menu,
-    # accessible via `nvidia-settings`.
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
@@ -91,15 +153,6 @@
   #hardware.opengl.enable = true;
   #hardware.opengl.driSupport32Bit = true;
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
-  # Configure keymap in X11
-  services.xserver.xkb.layout = "br";
   # Configure console keymap
   console.keyMap = "br-abnt2";
 
@@ -156,12 +209,6 @@
     #packages = with pkgs; [  ];
   };
 
-  # Habilitando o fish
-  programs.fish.enable = true;
-
-  # Flatpak support
-  services.flatpak.enable = true;
-
   # Experimental NIX configs
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -175,8 +222,9 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    #editor
     neovim
+    #system utilities
     nmap
     zip
     rar
@@ -185,14 +233,53 @@
     git
     pciutils
     lshw
+    #container staff
     podman
     distrobox
+    #GPU chooser
     inputs.envycontrol.packages.x86_64-linux.default
+    #programing languages 
+    nodejs_18
+    #php #is already installed by LAMP stack (lamb/server.nix)
+    #Tools for remote desktop
+    remmina
+
   ];
 
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
+  environment.gnome.excludePackages = (with pkgs; [ gnome-photos gnome-tour ])
+    ++ (with pkgs.gnome; [
+      gnome-music
+      epiphany # web browser
+      geary # email reader
+      gnome-characters
+      totem # video player
+      tali # poker game
+      iagno # go game
+      hitori # sudoku game
+      atomix # puzzle game
+    ]);
+
+  programs = {
+    neovim = {
+      enable = true;
+      defaultEditor = true;
+    };
+    # Habilitando o fish
+    fish = {
+      enable = true;
+      shellAliases = {
+        ls = "exa -lha";
+        sstart = "sudo systemctl start";
+        srestart = "sudo systemctl restart";
+        sstop = "sudo systemctl stop";
+        senable = "sudo systemctl enable";
+        sdisable = "sudo systemctl disable";
+
+      };
+    };
+
+    #Enable the bash auto-complete app
+    bash = { completition.enable = true; };
   };
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -204,50 +291,8 @@
   # };
 
   # List services that you want to enable:
-  services = {
-    udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
-    # syncthing
-    syncthing = {
-      enable = true;
-      user = "jose";
-      dataDir =
-        "/home/jose/Documentos/Cofres-Obsidian"; # Default folder for new synced folders
-      configDir =
-        "/home/jose/Documentos/.config/syncthing"; # Folder for Syncthing's settings and keys
-    };
-  };
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = true;
-  networking.firewall.allowedTCPPortRanges = [
-    # KDE Connect
-    {
-      from = 1714;
-      to = 1764;
-    }
-  ];
-  networking.firewall.allowedUDPPortRanges = [
-    # KDE Connect
-    {
-      from = 1714;
-      to = 1764;
-    }
-  ];
-  # Syncthing ports: 
-  # 8384 for remote access to GUI
-  # 22000 TCP and/or UDP for sync traffic
-  # 21027/UDP for discovery
-  networking.firewall.allowedTCPPorts = [ 8384 22000 21027 ];
-  networking.firewall.allowedUDPPorts = [ 22000 21027 ];
-
-
-    # Enable common container config files in /etc/containers
+  # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
   virtualisation = {
     podman = {
