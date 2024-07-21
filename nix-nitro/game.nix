@@ -1,9 +1,8 @@
 # game staff
 { config, pkgs, inputs, lib, ... }:
-
 {
     environment.systemPackages = with pkgs; [
-        mangoHud
+        mangohud
         protonup
         heroic
     ];
@@ -12,7 +11,7 @@
             enable = true;
             gamescopeSession = {
                 enable = true;
-            }
+            };
         };
         gamemode = {
             enable = true;

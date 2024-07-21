@@ -4,13 +4,12 @@ let
   autoStartPrograms = [ pkgs.megasync pkgs.syncthingtray ];
 in {
 
-  # TODO please change the username & home directory to your own
   home.username = "jose";
   home.homeDirectory = "/home/jose";
 
   home.packages = with pkgs; [
     #nix-tools
-    nixfmt # only necessary for format nix language on vscode (my user case)
+    nixfmt-classic # only necessary for format nix language on vscode (my user case)
     #direnv 
 
     #browsers
@@ -53,6 +52,7 @@ in {
     dconf
     #anydesk
     bitwarden
+    syncthingtray
 
     #communication
     telegram-desktop
@@ -77,7 +77,7 @@ in {
     gnomeExtensions.gpu-profile-selector
     gnomeExtensions.containers
     gnomeExtensions.appindicator
-    gnomeExtensions.syncthing-indicator
+
     #gtk theme
     adw-gtk3
 
@@ -85,6 +85,9 @@ in {
     neofetch
 
   ];
+
+  # It's linked to user session, so it has to be in home-manager config
+  services = { syncthing.tray.enable = true; };
 
   # enable neovim and add numbers on lines 
   programs = {
@@ -130,6 +133,14 @@ in {
         "text/xlsx"
       ];
     };
+    # source: https://github.com/Diegiwg/PrismLauncher-Cracked/releases/tag/v8.4.1
+    prism-launcher = {
+      name = "Prism-Launcher";
+      exec = "appimage-run ${appimage_dir}/prism-launcher/PrismLauncher-Linux-x86_64.AppImage";
+      icon = "${appimage_dir}/prism-launcher/PrismLauncher-Linux-x86_64.png";
+      categories = [ "Application" ];
+      mimeType = [ ];
+    };
   };
 
   # Start apps on Gnome startup
@@ -165,6 +176,6 @@ in {
     };
   }) autoStartPrograms);
 
-  home.stateVersion = "24.05";
+  home.stateVersion = "24.05"; # Do not touch 
   programs.home-manager.enable = true;
 }
