@@ -103,6 +103,19 @@
   # ------------------------------------------------------------ #
 
   # Modificações 
+
+  # Remove gnome apps
+environment.gnome.excludePackages = with pkgs; [
+    epiphany
+    gnome-maps
+    gnome-music
+    gnome-contacts
+    gnome-weather
+    gnome-tour
+    gnome-software
+  ];
+
+
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
@@ -124,12 +137,16 @@
     gearlever
     nixfmt
     direnv
+    bazaar
   ];
+
   programs.fish.enable = true;
+
   programs.neovim = {
   	enable = true;
 	defaultEditor = true;
   };
+
   programs.git = {
     enable = true;
     config.user = {
@@ -137,10 +154,12 @@
       email = "anderson.k1006@gmail.com";
     };
   };
+
   # flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   services.flatpak.enable = true;
+
   services.tailscale = {
 	  	enable = true;
 	  };
@@ -151,6 +170,7 @@
       flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     '';
   };
+  
  services.openssh.enable = true;
 
 
